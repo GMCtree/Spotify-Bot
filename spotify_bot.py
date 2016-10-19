@@ -16,29 +16,32 @@ def about(bot, update):
 	bot.sendMessage(update.message.chat_id, text="This bot has been created by GMCtree using Python and the Python Telegram Bot API the Python-Telegram-Bot Team")
 
 def is_specific_search(query):
-	types = ['album:', 'artist:', 'playlist:', 'track:']
+	types = ['album', 'artist', 'playlist', 'track']
 	if query.split(': ')[0] in types:
 		return True
 	else:
 		return False
 
-
 def search(bot, update):
-	secret = open("secret.txt", "r").read()
 	message_list = (update.message.text).split(': ')
 
 	if is_specific_search(update.message.text):
+
 		search_type = message_list[0]
 		# replace all spaces with '+' as per the Spotify Web API protocol
-		search_query = message_list[1].replace(' ', '+')
-		request = urllib2.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=" + search_type + "&limit=5", headers={"Authorization" : secret})
+		search_query = message_list[1].lower().strip().replace(' ', '%20')
+		request = urllib2.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=" + search_type + "&limit=5")
 	else:
 		# replace all spaces with '+' as per the Spotify Web API protocol
-		search_query = message_list[0].replace(' ', '+')
-		request = urllib2.Request("https://api.spotify.com/v1/search?q=" + search_query + "&limit=1", headers={"Authorization" : secret})
+		search_query = message_list[0].lower().strip().replace(' ', '%20')
+		request = urllib2.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=artist,track,album,playlist" "&limit=1")
 
-	print request
-	contents = urllib2.urlopen(request).read()
+	try:
+		contents = urllib2.urlopen(request).read()
+	except urllib2.HTTPError as e:
+		print e.code
+		print e.read()
+
 	print contents
 	bot.sendMessage(update.message.chat_id, text="Request Sent")
 
