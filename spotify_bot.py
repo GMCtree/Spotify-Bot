@@ -1,49 +1,75 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import urllib2
 import logging
+import json
+import sys
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
+# contains all types of content as outlined in Spotify Web API
+types = ['album', 'artist', 'playlist', 'track']
+
 def help(bot, update):
 	print "Help page selected"
-	bot.sendMessage(update.message.chat_id, text="To make a general search, just enter a search query. To search specifically, type 'artist, album, playlist, or track': query. Example --> artist: Dr. Dre")
+	bot.sendMessage(update.message.chat_id, text = "To make a general search, just enter a search query. To search specifically, type 'artist, album, playlist, or track': query. Example --> artist: Dr. Dre")
 
 def about(bot, update):
 	print "About page selected"
-	bot.sendMessage(update.message.chat_id, text="This bot has been created by GMCtree using Python and the Python Telegram Bot API the Python-Telegram-Bot Team")
+	bot.sendMessage(update.message.chat_id, text = "This bot has been created by GMCtree using Python and the Python Telegram Bot API the Python-Telegram-Bot Team")
 
-def is_specific_search(query):
-	types = ['album', 'artist', 'playlist', 'track']
+def check_search_type(query):
 	if query.split(': ')[0] in types:
 		return True
 	else:
 		return False
 
+def format_and_send(bot, update, content_data, is_specific_search, search_type = None):
+	bot_response = "Click this link to open the "
+	
+	# if user has made a specific search
+	if is_specific_search:
+		# add 's' to be able to access value in Spotify response JSON
+		bot.sendMessage(update.message.chat_id, text = bot_response + search_type + " " + content_data[search_type + 's']['items'][0]['external_urls']['spotify'])
+	# if user has made a general search
+	else:
+		for cur_type in types:
+			bot.sendMessage(update.message.chat_id, text = bot_response + cur_type + " " + content_data[cur_type + 's']['items'][0]['external_urls']['spotify'])
+
+
 def search(bot, update):
 	message_list = (update.message.text).split(': ')
 
-	if is_specific_search(update.message.text):
+	is_specific_search = check_search_type(update.message.text)
 
+	if is_specific_search:
+		print "Specific search selected"
 		search_type = message_list[0]
-		# replace all spaces with '+' as per the Spotify Web API protocol
+		# replace all spaces with '%20' as per the Spotify Web API protocol
 		search_query = message_list[1].lower().strip().replace(' ', '%20')
-		request = urllib2.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=" + search_type + "&limit=5")
+		request = urllib2.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=" + search_type + "&limit=1")
 	else:
-		# replace all spaces with '+' as per the Spotify Web API protocol
+		print "General search selected"
+		# replace all spaces with '%20' as per the Spotify Web API protocol
 		search_query = message_list[0].lower().strip().replace(' ', '%20')
 		request = urllib2.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=artist,track,album,playlist" "&limit=1")
 
 	try:
+		print "Search query attempted"
 		contents = urllib2.urlopen(request).read()
+		content_data = json.loads(contents)
+		# make proper call to function based on search type
+		if is_specific_search:
+			format_and_send(bot, update, content_data, is_specific_search, search_type)
+		else:
+			format_and_send(bot, update, content_data, is_specific_search)
+		print "Search query successful"
 	except urllib2.HTTPError as e:
+		print "Search query failed"
 		print e.code
 		print e.read()
-
-	print contents
-	bot.sendMessage(update.message.chat_id, text="Request Sent")
 
 def error(bot, update, error):
 	logger.warn('Update "%s" caused error "%s"' % (update, error))
@@ -62,10 +88,9 @@ def main():
 
 	dp.add_error_handler(error)
 
-	# being long polling
+	# begin long polling
 	updater.start_polling()
 
-	# run bot until KeyboardInterrupt event
 	updater.idle()
 
 
