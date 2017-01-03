@@ -1,5 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-import urllib2
+import urllib
 import logging
 import json
 import sys
@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 types = ['album', 'artist', 'playlist', 'track']
 
 def help(bot, update):
-	print "Help page selected"
+	print ("Help page selected")
 	bot.sendMessage(update.message.chat_id, text = "To make a general search, just enter a search query. To search specifically, type 'artist, album, playlist, or track': query. Example --> artist: Dr. Dre")
 
 def about(bot, update):
-	print "About page selected"
+	print ("About page selected")
 	bot.sendMessage(update.message.chat_id, text = "This bot has been created by GMCtree using Python and the Python Telegram Bot API the Python-Telegram-Bot Team")
 
 def check_search_type(query):
@@ -45,31 +45,31 @@ def search(bot, update):
 	is_specific_search = check_search_type(update.message.text)
 
 	if is_specific_search:
-		print "Specific search selected"
+		print ("Specific search selected")
 		search_type = message_list[0]
 		# replace all spaces with '%20' as per the Spotify Web API protocol
 		search_query = message_list[1].lower().strip().replace(' ', '%20')
-		request = urllib2.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=" + search_type + "&limit=1")
+		request = urllib.request.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=" + search_type + "&limit=1")
 	else:
-		print "General search selected"
+		print ("General search selected")
 		# replace all spaces with '%20' as per the Spotify Web API protocol
 		search_query = message_list[0].lower().strip().replace(' ', '%20')
-		request = urllib2.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=artist,track,album,playlist" "&limit=1")
+		request = urllib.request.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=artist,track,album,playlist" "&limit=1")
 
 	try:
-		print "Search query attempted"
-		contents = urllib2.urlopen(request).read()
+		print ("Search query attempted")
+		contents = urllib.request.urlopen(request).read()
 		content_data = json.loads(contents)
 		# make proper call to function based on search type
 		if is_specific_search:
 			format_and_send(bot, update, content_data, is_specific_search, search_type)
 		else:
 			format_and_send(bot, update, content_data, is_specific_search)
-		print "Search query successful"
-	except urllib2.HTTPError as e:
-		print "Search query failed"
-		print e.code
-		print e.read()
+		print ("Search query successful")
+	except urllib.request.HTTPError as e:
+		print ("Search query failed")
+		print (e.code)
+		print (e.read())
 
 def error(bot, update, error):
 	logger.warn('Update "%s" caused error "%s"' % (update, error))
@@ -95,5 +95,5 @@ def main():
 
 
 if __name__ == '__main__':
-	print "Bot is running..."
+	print ("Bot is running...")
 	main()
