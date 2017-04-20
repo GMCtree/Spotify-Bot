@@ -1,5 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-import urllib
+import urllib.request
 import logging
 import json
 import sys
@@ -28,7 +28,7 @@ def check_search_type(query):
 
 def format_and_send(bot, update, content_data, is_specific_search, search_type = None):
 	bot_response = "Click this link to open the "
-	
+
 	# if user has made a specific search
 	if is_specific_search:
 		# add 's' to be able to access value in Spotify response JSON
@@ -76,7 +76,10 @@ def error(bot, update, error):
 
 # main function needed to enable logging
 def main():
-	updater = Updater(str(open("telegram_token.txt", "r").read()))
+	with open("telegram_token.txt", "r") as f:
+	    token = str(f.read()).rstrip()
+
+	updater = Updater(token)
 
 	dp = updater.dispatcher
 
