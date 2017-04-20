@@ -54,7 +54,7 @@ def search(bot, update):
 		print ("General search selected")
 		# replace all spaces with '%20' as per the Spotify Web API protocol
 		search_query = message_list[0].lower().strip().replace(' ', '%20')
-		request = urllib.request.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=artist,track,album,playlist" "&limit=1")
+		request = urllib.request.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=artist,album,playlist,track&limit=1")
 
 	try:
 		print ("Search query attempted")
@@ -87,7 +87,7 @@ def main():
 
 	dp.add_handler(CommandHandler("about", about))
 
-	dp.add_handler(MessageHandler([Filters.text], search))
+	dp.add_handler(MessageHandler(Filters.text, search))
 
 	dp.add_error_handler(error)
 
