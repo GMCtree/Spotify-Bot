@@ -38,6 +38,8 @@ def format_and_send(bot, update, content_data, is_specific_search, search_type =
 		for cur_type in types:
 			bot.sendMessage(update.message.chat_id, text = bot_response + cur_type + " " + content_data[cur_type + 's']['items'][0]['external_urls']['spotify'])
 
+def no_results(response):
+    return all(not response[_type + "s"]['items'] for _type in types)
 
 def search(bot, update):
 	message_list = (update.message.text).split(': ')
@@ -57,15 +59,22 @@ def search(bot, update):
 		request = urllib.request.Request("https://api.spotify.com/v1/search?q=" + search_query + "&type=artist,album,playlist,track&limit=1")
 
 	try:
-		print ("Search query attempted")
-		contents = urllib.request.urlopen(request).read()
-		content_data = json.loads(contents)
-		# make proper call to function based on search type
-		if is_specific_search:
-			format_and_send(bot, update, content_data, is_specific_search, search_type)
-		else:
-			format_and_send(bot, update, content_data, is_specific_search)
-		print ("Search query successful")
+            print ("Search query attempted")
+            content_data = json.loads(urllib.request.urlopen(request).read())
+            is_no_results = False
+#TODO: make no_results work for specific search as well
+            if is_specific_search != True:
+                is_no_results = no_results(content_data)
+            if is_no_results:
+                print("No results found")
+                bot.sendMessage(update.message.chat_id, text = "No results found :(")
+            else:
+                # make proper call to function based on search type
+                if is_specific_search:
+                        format_and_send(bot, update, content_data, is_specific_search, search_type)
+                else:
+                        format_and_send(bot, update, content_data, is_specific_search)
+                print ("Search query successful")
 	except urllib.request.HTTPError as e:
 		print ("Search query failed")
 		print (e.code)
