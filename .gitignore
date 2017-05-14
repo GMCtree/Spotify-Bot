@@ -1,3 +1,4 @@
 secret.txt
 telegram_token.txt
 .DS_Store
+.env
