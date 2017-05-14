@@ -1,1 +1,1 @@
-web: python3 spotify_bot.py
+worker: python3 spotify_bot.py
