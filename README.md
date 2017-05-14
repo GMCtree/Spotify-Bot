@@ -1,5 +1,7 @@
 # Spotify Bot
 
+***NOTE: The bot is currently not hosted anywhere. I am hoping to host it soon. Sorry for the inconvenience***
+
 ## Table of Contents
 [Introduction](#intro)  
 [Usage](#use)
@@ -10,12 +12,8 @@ This is a Telegram bot that has the ability to make calls to the Spotify API to 
 
 <a id = "use"></a>
 ## Usage
-To use the bot, you will first need to create a [Telegram](https://telegram.org/) account. Once you do that, start a chat with the bot by opening a new chat with @spotify_telegram_bot.
+To use the bot, you will first need to create a [Telegram](https://telegram.org/) account. Once you do that, you can call the bot from anywhere by calling the bot with @spotify_telegram_bot.
 
-To make a specific search, type either album, artist, track, playlist followed by a colon (:). Then type what you are searching for. Here are some examples:
--	artist: Dr. Dre
--	track: Still Dre
--	playlist: early Dr. Dre
--	album: The Chronic
+To make a search, call the bot and type. The bot will respond with an option to grab the top result of either a track, artist, album or playlist and you can click which you would like to get a Spotify link to the item.
 
-To make a general search, just type! The bot will respond with the top artist, track, playlist and album for your search query.
+*P.S - Because of the change to an inline bot, general search is currently unavailable. I hoping to re-implement this in the near future. Sorry for the inconvenience.*
