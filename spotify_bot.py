@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from os import environ
+import os
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
 from telegram import InputTextMessageContent, InlineQueryResultArticle
 import urllib.request
@@ -21,12 +21,12 @@ def about(bot, update):
     print ("About page selected")
     bot.sendMessage(update.message.chat_id, text = "This bot has been created by GMCtree using Python and the Python Telegram Bot API the Python-Telegram-Bot Team")
 
+#TODO: refactor this function with respect to new inline query functionality
 def no_results(response):
     return all(not response[_type + "s"]['items'] for _type in types)
 
 def search(query, query_type):
-    print("Search attempted")
-
+    # replace all spaces with %20 as per Spotify Web API
     search_query = query.lower().strip().replace(' ', '%20')
     api_base_url = "https://api.spotify.com/v1/search?q="
     search_types = {
@@ -38,7 +38,6 @@ def search(query, query_type):
 
     search_url = search_types[query_type]
 
-    print("Search URL created")
     request = urllib.request.Request(search_url)
     content_data = json.loads(urllib.request.urlopen(request).read())
     #TODO: make check for no results
@@ -76,8 +75,15 @@ def error(bot, update, error):
 
 # main function needed to enable logging
 def main():
-    with open("telegram_token.txt", "r") as f:
-       token = str(f.read()).rstrip()
+
+    # Check to see which environment to use by reading from config file
+    with open('config.json') as config_file:
+        config = json.load(config_file)
+        if not config['prod']:
+            with open("telegram_token.txt", "r") as f:
+                token = str(f.read()).rstrip()
+        else:
+            token = os.environ['TELEGRAM_KEY']
 
     updater = Updater(token)
 
@@ -86,8 +92,6 @@ def main():
     dp.add_handler(CommandHandler("help", help))
 
     dp.add_handler(CommandHandler("about", about))
-
-#       dp.add_handler(MessageHandler(Filters.text, search))
 
     dp.add_handler(InlineQueryHandler(inlinequery))
 
