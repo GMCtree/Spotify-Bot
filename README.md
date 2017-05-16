@@ -1,6 +1,6 @@
 # Spotify Bot
 
-***NOTE: The bot is currently not hosted anywhere. I am hoping to host it soon. Sorry for the inconvenience***
+***NOTE: The bot is currently hosted on Heroku***
 
 ## Table of Contents
 [Introduction](#intro)  
@@ -16,4 +16,4 @@ To use the bot, you will first need to create a [Telegram](https://telegram.org/
 
 To make a search, call the bot and type. The bot will respond with an option to grab the top result of either a track, artist, album or playlist and you can click which you would like to get a Spotify link to the item.
 
-*P.S - Because of the change to an inline bot, general search is currently unavailable. I hoping to re-implement this in the near future. Sorry for the inconvenience.*
+*P.S - Because of the change to an inline bot, general search is currently unavailable. I'm hoping to re-implement this in the near future. Sorry for the inconvenience.*
