@@ -21,52 +21,50 @@ def about(bot, update):
     print ("About page selected")
     bot.sendMessage(update.message.chat_id, text = "This bot has been created by GMCtree using Python and the Python Telegram Bot API the Python-Telegram-Bot Team")
 
-#TODO: refactor this function with respect to new inline query functionality
-def no_results(response):
-    return all(not response[_type + "s"]['items'] for _type in types)
-
 def search(query, query_type):
     # replace all spaces with %20 as per Spotify Web API
     search_query = query.lower().strip().replace(' ', '%20')
     api_base_url = "https://api.spotify.com/v1/search?q="
     search_types = {
-    'track' : api_base_url + search_query + "&type=track&limit=1",
-    'artist' : api_base_url + search_query + "&type=artist&limit=1",
-    'album' : api_base_url + search_query + "&type=album&limit=1",
-    'playlist' : api_base_url + search_query + "&type=playlist&limit=1"
+        'track' : api_base_url + search_query + "&type=track&limit=1",
+        'artist' : api_base_url + search_query + "&type=artist&limit=1",
+        'album' : api_base_url + search_query + "&type=album&limit=1",
+        'playlist' : api_base_url + search_query + "&type=playlist&limit=1"
     }
 
     search_url = search_types[query_type]
 
     request = urllib.request.Request(search_url)
     content_data = json.loads(urllib.request.urlopen(request).read())
-    #TODO: make check for no results
 
-    result = content_data[query_type + 's']['items'][0]['external_urls']['spotify']
-
-    return result
+    if len(content_data[query_type + 's']['items']) == 0:
+        return None
+    else :
+        return content_data[query_type + 's']['items'][0]['external_urls']['spotify']
 
 # main function to handle all inline queries
 def inlinequery(bot, update):
     query = update.inline_query.query
     results = list()
+    types = ['Track', 'Artist', 'Album', 'Playlist']
 
+    # if empty query, return blank results to prevent unnecessary Spotify API calls
+    if query == '':
+        return results
+    else:
     # each new value will show up in the response to the user
-    results.append(InlineQueryResultArticle(id=uuid4(),
-        title='Track',
-        input_message_content=InputTextMessageContent(search(query, 'track'))))
+        for _type in types:
+            response = search(query, _type.lower())
+            if response is not None:
+                results.append(InlineQueryResultArticle(id=uuid4(),
+                        title=_type,
+                        input_message_content=InputTextMessageContent(response)))
 
-    results.append(InlineQueryResultArticle(id=uuid4(),
-        title='Artist',
-        input_message_content=InputTextMessageContent(search(query, 'artist'))))
-
-    results.append(InlineQueryResultArticle(id=uuid4(),
-        title='Album',
-        input_message_content=InputTextMessageContent(search(query, 'album'))))
-
-    results.append(InlineQueryResultArticle(id=uuid4(),
-        title='Playlist',
-        input_message_content=InputTextMessageContent(search(query, 'playlist'))))
+    # if there are no results, tell user
+    if len(results) == 0:
+        results.append(InlineQueryResultArticle(id=uuid4(),
+                title="No results found",
+                input_message_content=InputTextMessageContent("No results found")))
 
     update.inline_query.answer(results)
 
