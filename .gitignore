@@ -1,4 +1,4 @@
-secret.txt
-telegram_token.txt
+telegram_token.*
+spotify_token.json
 .DS_Store
 .env

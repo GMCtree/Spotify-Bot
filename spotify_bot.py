@@ -7,6 +7,7 @@ import urllib.request
 import logging
 import json
 import sys
+import base64
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -19,23 +20,56 @@ def help(bot, update):
 
 def about(bot, update):
     print ("About page selected")
-    bot.sendMessage(update.message.chat_id, text = "This bot has been created by GMCtree using Python and the Python Telegram Bot API the Python-Telegram-Bot Team")
+    bot.sendMessage(update.message.chat_id, text = "This bot has been created by GMCtree using Python and the Python Telegram Bot API created by the Python-Telegram-Bot Team")
+
+# get the authorization token to make requests to Spotify API
+def get_auth_token():
+    with open("spotify_token.json", "r") as auth_file:
+        auth_data = json.load(auth_file)
+        client_id = auth_data["client_id"]
+        client_secret = auth_data["client_secret"]
+
+
+    # Spotify requires base64 encoding for the token
+    auth_token = client_id + ":" + client_secret
+    auth_token_encoded = base64.b64encode(auth_token.encode("ascii"))
+
+    request_body = urllib.parse.urlencode({"grant_type": "client_credentials"}).encode()
+    auth_request = urllib.request.Request("https://accounts.spotify.com/api/token", data=request_body)
+    auth_request.add_header("Authorization", "Basic " + auth_token_encoded.decode())
+
+    auth_response = json.loads(urllib.request.urlopen(auth_request).read())
+    access_token = auth_response["access_token"]
+    return access_token
 
 def search(query, query_type):
     # replace all spaces with %20 as per Spotify Web API
-    search_query = query.lower().strip().replace(' ', '%20')
+    search_query = query.lower().strip().replace(" ", "%20")
     api_base_url = "https://api.spotify.com/v1/search?q="
     search_types = {
-        'track' : api_base_url + search_query + "&type=track&limit=1",
-        'artist' : api_base_url + search_query + "&type=artist&limit=1",
-        'album' : api_base_url + search_query + "&type=album&limit=1",
-        'playlist' : api_base_url + search_query + "&type=playlist&limit=1"
+        "track" : api_base_url + search_query + "&type=track&limit=1",
+        "artist" : api_base_url + search_query + "&type=artist&limit=1",
+        "album" : api_base_url + search_query + "&type=album&limit=1",
+        "playlist" : api_base_url + search_query + "&type=playlist&limit=1"
     }
 
     search_url = search_types[query_type]
 
     request = urllib.request.Request(search_url)
-    content_data = json.loads(urllib.request.urlopen(request).read())
+    auth_token = get_auth_token()
+    request.add_header("Authorization", "Bearer " + auth_token)
+
+    try:
+        content_data = json.loads(urllib.request.urlopen(request).read())
+    except urllib.error.HTTPError as err:
+        if err.code == 400:
+            print("Looks like you have a bad request. Have you checked to make sure your header is correct?")
+            print(err.read())
+        elif err.code == 401:
+            print("Your authorization token is incorrect or expired. Please request a new one")
+            print(err.read())
+        else:
+            print(err.read())
 
     if len(content_data[query_type + 's']['items']) == 0:
         return None
@@ -75,13 +109,13 @@ def error(bot, update, error):
 def main():
 
     # Check to see which environment to use by reading from config file
-    with open('config.json') as config_file:
+    with open("config.json", "r") as config_file:
         config = json.load(config_file)
-        if not config['prod']:
-            with open("telegram_token.txt", "r") as f:
-                token = str(f.read()).rstrip()
+        if not config["prod"]:
+            with open("telegram_token.json", "r") as token_file:
+                token = json.load(token_file)["token"]
         else:
-            token = os.environ['TELEGRAM_KEY']
+            token = os.environ["TELEGRAM_KEY"]
 
     updater = Updater(token)
 
