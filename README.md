@@ -31,15 +31,19 @@ After that, the bot should be running and will receive requests as long as it is
 
 <a id = "heroku"></a>
 ### Heroku
-To run the bot locally using Heroku, create a .env file using the format KEY=VALUE, where KEY is the key to access the VALUE, and the VALUE is you Telegram API key.
+To run the bot locally using Heroku, create a .env file using the format KEY=VALUE, where KEY is the key to access the VALUE, and the VALUE is you Telegram API key. You should also follow the same format for your Spotify Developer client ID and client secret keys.
 Example:
 ```
 TELEGRAM_KEY=YOUR_API_KEY
+CLIENT_ID=YOUR_CLIENT_ID
+CLIENT_SECRET=YOUR_SECRET_KEY
 ```
 
 You can then access this value by using:
 ```
-os.environ['TELEGRAM_KEY']
+os.environ["TELEGRAM_KEY"]
+os.environ["CLIENT_ID"]
+os.environ["CLIENT_SECRET"]
 ```
 To run the bot, just type:
 ```
@@ -47,6 +51,6 @@ heroku local
 ```
 And then the bot will accept requests.
 
-To host the bot on Heroku, first create a free account on [Heroku](https://www.heroku.com/). After doing that, follow the instructions to set up your bot on your Heroku repo. If the bot ran correctly using Heroku locally, then it should run fine when hosted.
+To host the bot on Heroku, first create a free account on [Heroku](https://www.heroku.com/). After doing that, follow the instructions to set up your bot on your Heroku repo. After doing that, go to your config variables in Heroku (located under 'Settings') and make sure to add the environment variables that you created in your .env file to here as well. If the bot ran correctly using Heroku locally, then it should run fine when hosted.
 
 *P.S - Because of the change to an inline bot, general search is currently unavailable. I'm hoping to re-implement this in the near future. Sorry for the inconvenience.*
