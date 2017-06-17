@@ -24,11 +24,18 @@ def about(bot, update):
 
 # get the authorization token to make requests to Spotify API
 def get_auth_token():
-    with open("spotify_token.json", "r") as auth_file:
-        auth_data = json.load(auth_file)
-        client_id = auth_data["client_id"]
-        client_secret = auth_data["client_secret"]
 
+    # Check to see which environment to use by reading from config file
+    with open("config.json", "r") as config_file:
+        config = json.load(config_file)
+        if not config["prod"]:
+            with open("spotify_token.json", "r") as auth_file:
+                auth_data = json.load(auth_file)
+                client_id = auth_data["client_id"]
+                client_secret = auth_data["client_secret"]
+        else:
+            client_id = os.environ["CLIENT_ID"]
+            client_secret = os.environ["CLIENT_SECRET"]
 
     # Spotify requires base64 encoding for the token
     auth_token = client_id + ":" + client_secret
