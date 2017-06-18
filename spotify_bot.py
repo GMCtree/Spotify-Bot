@@ -1,13 +1,8 @@
 from uuid import uuid4
 
-import os
+import os, urllib.request, logging, json, sys, base64
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
 from telegram import InputTextMessageContent, InlineQueryResultArticle
-import urllib.request
-import logging
-import json
-import sys
-import base64
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -45,11 +40,16 @@ def get_auth_token():
     auth_request = urllib.request.Request("https://accounts.spotify.com/api/token", data=request_body)
     auth_request.add_header("Authorization", "Basic " + auth_token_encoded.decode())
 
-    auth_response = json.loads(urllib.request.urlopen(auth_request).read())
+    try:
+        auth_response = json.loads(urllib.request.urlopen(auth_request).read())
+    except urllib.error.HTTPError as err:
+        print(err.read())
+
     access_token = auth_response["access_token"]
+
     return access_token
 
-def search(query, query_type):
+def search(query, query_type, auth_token):
     # replace all spaces with %20 as per Spotify Web API
     search_query = query.lower().strip().replace(" ", "%20")
     api_base_url = "https://api.spotify.com/v1/search?q="
@@ -63,7 +63,6 @@ def search(query, query_type):
     search_url = search_types[query_type]
 
     request = urllib.request.Request(search_url)
-    auth_token = get_auth_token()
     request.add_header("Authorization", "Bearer " + auth_token)
 
     try:
@@ -85,9 +84,13 @@ def search(query, query_type):
 
 # main function to handle all inline queries
 def inlinequery(bot, update):
+
+    print("New query started")
     query = update.inline_query.query
     results = list()
     types = ['Track', 'Artist', 'Album', 'Playlist']
+
+    auth_token = get_auth_token()
 
     # if empty query, return blank results to prevent unnecessary Spotify API calls
     if query == '':
@@ -95,7 +98,7 @@ def inlinequery(bot, update):
     else:
     # each new value will show up in the response to the user
         for _type in types:
-            response = search(query, _type.lower())
+            response = search(query, _type.lower(), auth_token)
             if response is not None:
                 results.append(InlineQueryResultArticle(id=uuid4(),
                         title=_type,
