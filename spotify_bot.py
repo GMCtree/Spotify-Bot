@@ -82,6 +82,9 @@ def search(query, query_type, auth_token):
     else :
         return content_data[query_type + 's']['items'][0]['external_urls']['spotify']
 
+def is_empty_query(query):
+    return True if query == '' else False
+
 # main function to handle all inline queries
 def inlinequery(bot, update):
 
@@ -93,7 +96,7 @@ def inlinequery(bot, update):
     auth_token = get_auth_token()
 
     # if empty query, return blank results to prevent unnecessary Spotify API calls
-    if query == '':
+    if is_empty_query(query):
         return results
     else:
     # each new value will show up in the response to the user
