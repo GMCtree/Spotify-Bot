@@ -2,3 +2,4 @@ telegram_token.*
 spotify_token.json
 .DS_Store
 .env
+__pycache__/*
