@@ -85,6 +85,9 @@ def search(query, query_type, auth_token):
 def is_empty_query(query):
     return True if query == '' else False
 
+def check_no_results(results):
+    return True if len(results) == 0 else False
+
 # main function to handle all inline queries
 def inlinequery(bot, update):
 
@@ -108,7 +111,7 @@ def inlinequery(bot, update):
                         input_message_content=InputTextMessageContent(response)))
 
     # if there are no results, tell user
-    if len(results) == 0:
+    if check_no_results(results):
         results.append(InlineQueryResultArticle(id=uuid4(),
                 title="No results found",
                 input_message_content=InputTextMessageContent("No results found")))
