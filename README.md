@@ -7,7 +7,9 @@
 [Usage](#use)  
 [Running the Bot](#run)  
   * [Local](#local)
-  * [Heroku](#heroku)
+  * [Heroku](#heroku)  
+  
+[Running the Unit Tests](#tests)
 
 <a id = "intro"></a>
 ## Introduction
@@ -53,4 +55,17 @@ And then the bot will accept requests.
 
 To host the bot on Heroku, first create a free account on [Heroku](https://www.heroku.com/). After doing that, follow the instructions to set up your bot on your Heroku repo. After doing that, go to your config variables in Heroku (located under 'Settings') and make sure to add the environment variables that you created in your .env file to here as well. If the bot ran correctly using Heroku locally, then it should run fine when hosted.
 
-*P.S - Because of the change to an inline bot, general search is currently unavailable. I'm hoping to re-implement this in the near future. Sorry for the inconvenience.*
+<a id = "tests"></a>
+## Running the Unit Tests
+The unit tests have been written using the Python 3 `unittest` library. To run the unit tests, run the following in your terminal:
+```
+python3 tests.py
+```
+
+This will run the unit tests and will let you know if all of them passed or not. If you would like more visibility into which tests pass and which ones did not, run the tests with the `-v` argument like so:
+```
+python3 tests.py -v
+```
+
+This will tell you the results of each of the tests individually as opposed to only telling you if all of them passed or not.
+
