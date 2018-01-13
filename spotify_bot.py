@@ -49,6 +49,18 @@ def get_auth_token():
 
     return access_token
 
+def get_thumbnail(response):
+    # check if images exist for search query
+    if 'images' in response and len(response['images']) > 0:
+        image = response['images'][0]
+        thumbnail = image['url']
+        thumbnail_width = image['width']
+        thumbnail_height = image['height']
+        return (thumbnail, thumbnail_width, thumbnail_height)
+    else:
+        return (None, None, None)
+
+
 def search(query, query_type, auth_token):
     # replace all spaces with %20 as per Spotify Web API
     search_query = query.lower().strip().replace(" ", "%20")
@@ -79,8 +91,11 @@ def search(query, query_type, auth_token):
 
     if len(content_data[query_type + 's']['items']) == 0:
         return None
-    else :
-        return content_data[query_type + 's']['items'][0]['external_urls']['spotify']
+    else:
+        response = content_data[query_type + 's']['items'][0]
+        spotify_link = response['external_urls']['spotify']
+        (thumbnail, thumbnail_width, thumbnail_height) = get_thumbnail(response)
+        return (spotify_link, thumbnail, thumbnail_width, thumbnail_height)
 
 def is_empty_query(query):
     return True if query == '' else False
@@ -108,7 +123,10 @@ def inlinequery(bot, update):
             if response is not None:
                 results.append(InlineQueryResultArticle(id=uuid4(),
                         title=_type,
-                        input_message_content=InputTextMessageContent(response)))
+                        input_message_content=InputTextMessageContent(response[0]),
+                        thumb_url=response[1],
+                        thumb_width=response[2],
+                        thumb_height=response[3]))
 
     # if there are no results, tell user
     if check_no_results(results):
