@@ -60,15 +60,32 @@ def search(query, query_type, auth_token):
         return None
     else:
         response = content_data[query_type + 's']['items'][0]
-        spotify_link = response['external_urls']['spotify']
-        (thumbnail, thumbnail_width, thumbnail_height) = get_thumbnail(response)
-        return (spotify_link, thumbnail, thumbnail_width, thumbnail_height)
+        return response
 
 def is_empty_query(query):
     return True if query == '' else False
 
 def check_no_results(results):
     return True if len(results) == 0 else False
+
+def build_inline_query_result_article(_type, response):
+    (thumb_url, thumb_width, thumb_height) = (None, None, None)
+    # use the album art of the track for the thumbnail
+    if _type == 'Track':
+        (thumb_url, thumb_width, thumb_height) = get_thumbnail(response['album'])
+    else:
+        (thumb_url, thumb_width, thumb_height) = get_thumbnail(response)
+
+    spotify_link = response['external_urls']['spotify']
+    name = response['name']
+    query_result_article = InlineQueryResultArticle(id=uuid4(),
+                        title=_type + ' - ' + name,
+                        input_message_content=InputTextMessageContent(spotify_link),
+                        thumb_url=thumb_url,
+                        thumb_width=thumb_width,
+                        thumb_height=thumb_height)
+
+    return query_result_article
 
 # main function to handle all inline queries
 def inlinequery(bot, update):
@@ -88,12 +105,7 @@ def inlinequery(bot, update):
         for _type in types:
             response = search(query, _type.lower(), auth_token)
             if response is not None:
-                results.append(InlineQueryResultArticle(id=uuid4(),
-                        title=_type,
-                        input_message_content=InputTextMessageContent(response[0]),
-                        thumb_url=response[1],
-                        thumb_width=response[2],
-                        thumb_height=response[3]))
+                results.append(build_inline_query_result_article(_type, response))
 
     # if there are no results, tell user
     if check_no_results(results):
