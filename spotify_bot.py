@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import os, urllib.request, logging, json, sys, auth
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
 from telegram import InputTextMessageContent, InlineQueryResultArticle
